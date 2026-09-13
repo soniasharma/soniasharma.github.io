@@ -14,7 +14,8 @@ export const BASE = '/';
 export default defineConfig({
   site: SITE,
   base: BASE,
-  integrations: [sitemap()],
+  // integrations: [sitemap()],
+  integrations: [],
   markdown: {
     shikiConfig: { theme: 'github-dark', wrap: true },
   },
