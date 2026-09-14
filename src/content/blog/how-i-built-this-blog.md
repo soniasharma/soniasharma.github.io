@@ -10,9 +10,9 @@ crosspost:
   substack: true
 ---
 
-I've been meaning to start writing publicly for several years. The blocker was never the writing. It was that every time I sat down to start, I'd fall into an afternoon of comparing platforms, and then the afternoon would end and I'd have nothing. Thanks to AI — specifically working with Claude — I finally broke through this analysis paralysis.
+I've been meaning to start writing publicly for several years. I had plenty to say about AI and machine learning, health and wellness, spirituality — a broad spectrum of interests that didn't fit neatly into any single platform. What I really wanted was my own home base, with GitHub as the source of truth. But every time I sat down to build it, I'd fall into an afternoon of comparing platforms and tools, and then the afternoon would end and I'd have nothing. Thanks to AI — specifically working with Claude — I finally broke through that analysis paralysis.
 
-So this time I gave myself a constraint: pick the setup I'd have to think about least, get one post out, and never touch the infrastructure again unless it's actually broken.
+So this time I gave myself a simple constraint: build infrastructure so seamless and easy to maintain that I can spend my energy writing, not debugging. Set it up once, then forget about it.
 
 Here's what I landed on and why.
 
@@ -40,6 +40,32 @@ git commit -am "new post" && git push
 
 Two minutes later it's live. There's no CMS, no database, no admin login, no dashboard. The failure modes of this setup are "I wrote bad YAML" and "GitHub is down," and I'm at peace with both.
 
+## How the build pipeline actually works
+
+Here's what happens under the hood so you're not confused like I was:
+
+**Astro's job:** It's a *static site generator*. It reads your markdown files and converts them to plain HTML. That's it. No server running, no database queries, no JavaScript overhead — just files.
+
+**The workflow:**
+
+```
+1. You write in markdown
+       ↓
+2. Git push to GitHub
+       ↓
+3. GitHub Actions triggers automatically
+       ↓
+4. Astro runs: npm run build
+   Converts all .md files to HTML in the /dist folder
+       ↓
+5. GitHub Pages serves the /dist folder
+   Site is live at soniasharma.github.io
+```
+
+**Why Astro, not a CMS?** A CMS (WordPress, Ghost, etc.) runs a server that generates pages on-demand. Astro generates all pages *once* at build time. The result is faster, cheaper (free hosting), and simpler — your blog is just static files. It's the right tool when your content doesn't change a thousand times a day.
+
+**The RSS feed, the sitemap, all of it** — Astro generates those too. You push markdown, GitHub Actions runs the build, Astro outputs everything, and GitHub Pages serves it. One command. No thinking required.
+
 ## Cross-posting without wrecking your SEO
 
 This is the part I actually had to look up, so I'll save you the search.
@@ -56,6 +82,20 @@ The fix is a `rel="canonical"` tag pointing back at your version. It's a one-lin
 
 I wrote a small script that takes a post slug and spits out three files — a Medium version, a Substack version, and a much shorter LinkedIn one with the link at the bottom. It doesn't auto-publish anything. I don't want a robot posting in my name; I want the copy-paste to take ten seconds instead of ten minutes.
 
+**The workflow:**
+
+```bash
+npm run crosspost -- post-slug-name
+```
+
+This generates three files in `out/post-slug-name/`. Then:
+
+- **Medium:** Go to https://medium.com/p/import, paste your post's URL (`soniasharma.github.io/blog/post-slug-name/`). Medium imports it and sets the canonical tag for you.
+- **Substack:** Paste the markdown, then set Canonical URL in post settings.
+- **LinkedIn:** Paste as a native post (not an article), include the link at the end.
+
+Each platform sees a canonical tag pointing back to your site. You're in control, you keep the original, and you get the distribution.
+
 ## What I deliberately skipped
 
 Comments. Analytics. A newsletter signup form. Tags-as-pages. Dark mode toggle (the CSS just respects your system setting). A photo of me looking thoughtfully off-camera.
@@ -67,19 +107,3 @@ Every one of those is a small ongoing obligation, and I have zero posts. The cor
 I'll be writing across the spectrum of what captures my curiosity: the evolving landscape of AI and machine learning, my current area of speaciality; the pursuit of physical well-being through yoga, strength training, and energy work;  the adventures and insights that come from exploring the world around me; and the deeper questions of mind and spirituality. It's an intentionally broad canvas — because the most interesting connections often happen at the intersections.
 
 If that sounds interesting, the [RSS feed](/rss.xml) is right there.
-
-<!-- linkedin -->
-I've been meaning to start writing publicly for about three years. The blocker was never the writing — it was that every attempt turned into an afternoon of comparing blogging platforms, and then the afternoon ended and I had nothing.
-
-This time I gave myself one constraint and it dissolved the whole problem: the original version of every post lives in a git repo I own.
-
-Everything else follows from that.
-
-• Medium, Substack, LinkedIn stop being platforms I commit to and become places I echo. No writing is trapped in someone else's editor.
-
-• The stack gets boring on purpose: markdown files, a static site generator, free hosting, deploy on git push. No CMS to babysit.
-
-• One thing worth getting right: if you republish elsewhere without a canonical link back, search engines may treat the *copy* as the original and your site as the duplicate. Medium's "Import a story" handles this; pasting the text does not.
-
-I shipped it in under an hour, which is roughly 1% of the time I'd already spent thinking about shipping it.
-<!-- /linkedin -->
